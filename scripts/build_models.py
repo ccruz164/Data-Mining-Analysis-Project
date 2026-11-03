@@ -24,7 +24,7 @@ missing_pct = (missing_count / len(df)) * 100
 
 print(f"Missing age count: {missing_count:,}")
 print(f"Missing age percentage: {missing_pct:.2f}%")
-# Impute missing values with the median of valid ages
+# Assign missing values a -1 for unknown
 df["age"] = df["age"].fillna(-1)
 print(df["age"].describe())
 
