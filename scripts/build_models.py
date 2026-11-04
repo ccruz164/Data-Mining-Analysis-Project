@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, top_k_accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
@@ -76,17 +76,32 @@ print(f"X_val shape:   {X_val.shape}")
 
 print(df.head())
 
-rf = RandomForestClassifier(n_estimators=100, max_depth=12, random_state=42, n_jobs=-1)
+# Note for report: Top 5 Accuracy is much higher when class weight is not set to balanced, but not actually better at predicting the minority classes
+# NDF has the most data and the model can get a 95% top 5 accuracy by predicting NDF for most users, but this is not useful for the business problem of predicting the minority classes
+rf = RandomForestClassifier(n_estimators=100, max_depth=12, class_weight="balanced", random_state=42, n_jobs=-1)
 rf.fit(X_train, y_train)
 
-y_pred = rf.predict(X_val)
+y_probs = rf.predict_proba(X_val)
+top_5_accuracy = top_k_accuracy_score(y_val, y_probs, k=5)
+print(f"Top-5 Accuracy: {top_5_accuracy:.4f}")
 
-print(f"\nValidation Accuracy: {accuracy_score(y_val, y_pred) * 100:.2f}%\n")
-print(
-    classification_report(
-        y_val,
-        y_pred,
-        target_names=[str(cls) for cls in le.classes_],
-        zero_division=0,
-    )
-)
+top_5_preds = np.argsort(y_probs, axis=1)[:, -5:]
+hits = np.any(top_5_preds == y_val[:, None], axis=1)
+
+# Calculate Recall@5 for each destination class
+classes = np.unique(y_val)
+class_recall_at_5 = {}
+
+for cls_idx in classes:
+    class_mask = y_val == cls_idx
+    actual_count = np.sum(class_mask)
+    hits_in_class = np.sum(hits[class_mask])
+    recall_at_5 = hits_in_class / actual_count if actual_count > 0 else 0
+    class_recall_at_5[le.classes_[cls_idx]] = {
+        "Support": actual_count,
+        "Hits@5": hits_in_class,
+        "Recall@5": f"{recall_at_5 * 100:.2f}%",
+    }
+
+recall_df = pd.DataFrame(class_recall_at_5).T
+print(recall_df)
