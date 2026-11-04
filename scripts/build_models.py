@@ -5,7 +5,7 @@ from sklearn.metrics import accuracy_score, classification_report, top_k_accurac
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-df = pd.read_csv('data/train_users_2.csv')
+df = pd.read_csv('data/raw/train_users_2.csv')
 
 # Drop to prevent leakage of information from the target variable
 # An existing value for date_first_booking would indicate that the user has already booked, which is what we are trying to predict
@@ -66,6 +66,8 @@ categorical_cols = [
 ]
 X[categorical_cols] = X[categorical_cols].fillna("-unknown-").astype(str)
 X = pd.get_dummies(X, columns=categorical_cols, drop_first=True)
+
+X.to_csv("data/processed/cleaned_test.csv", index=False)
 
 # Split the dataset into training and validation sets
 # The test set does not have labels so this is useful for measuring precision and recall of the model
