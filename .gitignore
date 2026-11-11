@@ -1,2 +1,3 @@
 data/raw/sessions.csv
 data/processed/cleaned_test.csv
+__pycache__/
