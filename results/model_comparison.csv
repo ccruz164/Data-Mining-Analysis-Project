@@ -1,0 +1,8 @@
+model,features,NDCG@5,top1_acc,top5_acc,train_seconds
+Constant ranking (no model),none,0.8219,0.6172,0.9626,0.0
+Naive Bayes (Bernoulli),"user table, one-hot only",0.8162,0.6046,0.9611,0.2
+Logistic regression,user table,0.8294,0.6379,0.9624,6.6
+Random forest (balanced classes),user table,0.4881,0.4028,0.5756,1.2
+Random forest,user table,0.8268,0.6307,0.9625,1.5
+LightGBM,user table,0.8357,0.655,0.9625,4.5
+LightGBM,user table + sessions,0.8535,0.7046,0.9613,10.2
